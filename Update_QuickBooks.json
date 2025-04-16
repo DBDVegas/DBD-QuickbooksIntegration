@@ -1,0 +1,204 @@
+{
+  "name": "Update QuickBooks",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        120
+      ],
+      "id": "6938e4aa-4ecc-4250-84f0-d1ee44f427cd",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "CSs5twZoASoSLUqR",
+          "mode": "list",
+          "cachedResultName": "Testing - Quickbooks — Get RentalWorks Token"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        360,
+        120
+      ],
+      "id": "e493e2da-37ce-487f-b1fa-34a55f383d7f",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "url": "={{ $vars.rentalworks_URL }}api/v1/order",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "sort",
+              "value": "EstimatedStartDate asc"
+            },
+            {
+              "name": "filter",
+              "value": "={\"Field\": \"EstimatedStartDate\", \"Op\": \">\", \"Value\": \"{{ $vars.rentalworks_start_sync_date }}\"}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        600,
+        120
+      ],
+      "id": "9dc89b62-808f-463e-807b-56a6a7f89dc3",
+      "name": "GET Orders"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a96d30a6-fb34-4a08-b52f-1ea1d7ee5d06",
+              "name": "PageSize",
+              "value": 15,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        120
+      ],
+      "id": "4c3a9f95-a41d-42ff-93ae-6e8295f15b04",
+      "name": "Set Page Size"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  var count = 0;\n  for (const [key, value] of Object.entries(item.json)){\n    if (key === 'Description') console.log(`Description: ${value}`);\n    console.log(`loop has run ${count} times`)\n    count++;\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        120
+      ],
+      "id": "1c220bca-86f9-4b03-8fc7-8b50121cdf28",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.rentalworks_URL }}/api/v1/deal/browse",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Bearer",
+              "value": "={{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"miscfields\": {},\n  \"module\": \"Deal\",\n  \"options\": {},\n  \"orderby\": \"ExpectedStartDate asc\",\n  \"orderbydirection\": \"\",\n  \"top\": 0,\n  \"pageno\": {{ $runIndex + 1 }},\n    \"pagesize\": {{ $('Set Page Size').item.json[\"PageSize\"] }},\n  \"searchfieldoperators\": [\n    \">\",\n  ],\n  \"searchfields\": [\n    \"ExpectedStartDate\",\n  ],\n  \"searchfieldvalues\": [\n  \"2025-01-01\",\n  ],\n  \"searchfieldtypes\": [\n  \"Date\",\n  ],\n  \"searchseparators\": [],\n  \"searchcondition\": [],\n  \"searchconjunctions\": [],\n  \"searchgroupings\": [],\n  \"uniqueids\": {},\n  \"boundids\": {},\n  \"filterfields\": {},\n  \"activeview\": \"\",\n  \"emptyobject\": false,\n  \"forexcel\": false,\n  \"includeallcolumns\": false,\n  \"fields\": [\n    \n  ],\n  \"totalfields\": [],\n  \"activeviewfields\": {}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        600,
+        320
+      ],
+      "id": "c7b02529-d5fb-404c-a0e5-f110a731029f",
+      "name": "Get Deals"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Page Size",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get Deals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Page Size": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Orders": {
+      "main": [
+        []
+      ]
+    },
+    "Get Deals": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a2efdd72-b4a3-4f2d-a1c7-e569fee4f178",
+  "meta": {
+    "instanceId": "11f20660bbab4ac3f549a30b911e99bdb9223b281f4e5becfbbc0dafacf25aee"
+  },
+  "id": "xX4d2RYLmUZ32yaD",
+  "tags": []
+}

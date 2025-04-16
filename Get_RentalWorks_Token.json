@@ -1,0 +1,68 @@
+{
+  "name": "Get RentalWorks Token",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -20
+      ],
+      "id": "f311746c-4b7a-4f47-8132-7540fe43ee3e",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.rentalworks_URL }}/api/v1/jwt",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "UserName",
+              "value": "chirales"
+            },
+            {
+              "name": "Password",
+              "value": "={{ $vars.rentalworks_password }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        180,
+        -20
+      ],
+      "id": "f93b2cb5-0585-4cd2-830e-b9af0c88b32b",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4f55af64-2d34-40c0-b5ab-eb9bbb108833",
+  "meta": {
+    "instanceId": "11f20660bbab4ac3f549a30b911e99bdb9223b281f4e5becfbbc0dafacf25aee"
+  },
+  "id": "CSs5twZoASoSLUqR",
+  "tags": []
+}
